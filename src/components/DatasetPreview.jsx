@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import React  from 'react';
 import { GenericDataTable ,ErrorDisplay} from './HelperIcons';
-const DatasetPreview = ({ phase }) => {
+const DatasetPreview = ({ phase,onStartMapping }) => {
     if (!phase) return <div className="text-center text-black">Select a phase from the history to view its results.</div>;
     
     const { data } = phase;
@@ -9,11 +9,19 @@ const DatasetPreview = ({ phase }) => {
     const data_array = data.data;
     const preview_array = data.sample_data;
 
-    console.log('Preview Data:', previewData.data[0].cruise, previewData.data[0].date, previewData.data[0].latitude, previewData.data[0].longitude);
+    // console.log('Preview Data:', previewData.data[0].cruise, previewData.data[0].date, previewData.data[0].latitude, previewData.data[0].longitude);
 
     // --- LOGIC REMAINS THE SAME ---
     // These flags correctly identify the *type* of data structure we received.
-    const isWodData = previewData && previewData.data[0].cruise && previewData.data[0].date&& previewData.data[0].latitude&&previewData.data[0].longitude;
+    const firstRecord = previewData.data?.[0]; 
+
+    // 2. Now, check if the firstRecord exists and has all the required properties.
+    const isWodData = firstRecord && 
+                      'cruise' in firstRecord && 
+                      'date' in firstRecord && 
+                      'latitude' in firstRecord && 
+                      'longitude' in firstRecord;
+    
     const isTabularData = Array.isArray(previewData.data) && previewData.sample_data;
     const isError = previewData && typeof previewData.error === 'string';
 
@@ -22,7 +30,7 @@ const DatasetPreview = ({ phase }) => {
         // Now, we pass the correct piece of data to the GenericDataTable in each case.
         if (isWodData) {
             // For WOD data, we pass the 'profile_sample' array to be rendered.
-            return <GenericDataTable data={previewData.data} />;
+            return <GenericDataTable data={previewData.sample_data} />;
         }
         if (isTabularData) {
             // For other tabular data, we pass the whole preview data array.
@@ -54,6 +62,17 @@ const DatasetPreview = ({ phase }) => {
                 
                 <h3 className="font-bold text-lg mt-4 mb-2">Data Sample</h3>
                 {renderDataSample()}
+                {!isError && Array.isArray(data_array) && (
+                    <div className="mt-6 pt-4 border-t">
+                        <button 
+                            // This onClick will be wired up in the next step
+                            onClick={onStartMapping}
+                            className="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700 transition-colors"
+                        >
+                            Proceed to Column Mapping →
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

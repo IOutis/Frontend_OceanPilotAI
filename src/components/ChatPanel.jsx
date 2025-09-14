@@ -15,9 +15,9 @@ const ChatPanel = ({ activePhase }) => {
   const handleSendMessage = (e) => { e.preventDefault(); /* ... */ };
   
   return (
-    <div className="bg-white text-black rounded-lg shadow-md flex flex-col max-h-screen overflow-y-scroll">
+    <div className="bg-white text-black rounded-lg shadow-md flex flex-col h-full ">
       <h2 className="text-black text-xl font-bold p-4 border-b">LLM Assistant</h2>
-      <div className="flex-grow p-4 overflow-y-scroll space-y-4 min-h-0">
+      <div className="flex-grow p-4 overflow-y-scroll space-y-4">
         {messages.map((msg, index) => (
           <div key={index} className={`flex items-start gap-3 ${msg.from === 'user' ? 'justify-end' : ''}`}>
             {msg.from === 'bot' && <BotIcon />}
