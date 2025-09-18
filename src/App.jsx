@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, BarChart, Bar, AreaChart, Area } from 'recharts';
 import { BarChart3, LineChart as LineChartIcon, ChartScatter, TrendingUp, Activity, Database, Upload, Settings, MessageSquare } from 'lucide-react';
-
+import { Merge } from 'lucide-react';
+import MergeComponent from './components/MergeComponent';
 
 // --- Component Imports ---
 // Assumes you have these components in the specified paths
@@ -66,6 +67,29 @@ function App() {
     setActivePhaseId(newPhase.id);
     setActiveView('preview');
   };
+  const handleStartMerge = () => {
+  setActiveView('merge');
+  setActivePhaseId(null);
+};
+const handleConfirmMerge = (mergedData) => {
+  // Create new merged phase following the same pattern as file uploads
+  const newMergedPhase = {
+    id: mergedData.id,
+    type: 'ingestion', // Keep as ingestion so it works with existing flow
+    name: mergedData.name,
+    data: mergedData
+  };
+
+  setPhaseHistory(prev => [...prev, newMergedPhase]);
+  setActivePhaseId(newMergedPhase.id);
+  setActiveView('preview'); // Show preview of merged data
+  
+  // Add success message
+  setChatMessages(prev => [...prev, { 
+    from: 'bot', 
+    text: `Successfully merged datasets into "${mergedData.name}". You can now preview, map, or analyze the merged data.` 
+  }]);
+};
 
   const handlePhaseSelect = (id) => {
     const selectedPhase = phaseHistory.find(p => p.id === id);
@@ -224,6 +248,20 @@ function App() {
             </div>
           </div>
         );
+      
+        case 'merge':
+                return (
+                  <MergeComponent 
+                    phase={activePhase} 
+                    sessionId={sessionId}
+                    phaseHistory={phaseHistory}
+                    onConfirmMerge={handleConfirmMerge}
+                    isAgentThinking={isAgentThinking}
+                  />
+                );
+
+
+
       case 'analysis':
         if (!activePhase) return <FileUploader onUploadSuccess={handleUploadSuccess} sessionId={sessionId} />;
         const analysisSourcePhase = phaseHistory.find(p => p.id === activePhase.sourcePhaseId);
@@ -251,21 +289,33 @@ function App() {
           <nav className="flex flex-col gap-2">
             <button 
               onClick={() => { setActiveView('ingestion'); setActivePhaseId(null); }} 
-              className={`text-left p-2 rounded-md font-semibold flex items-center gap-2 ${activeView === 'ingestion' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-black'}`}
+              className={`text-left text-white p-2 rounded-md font-semibold flex items-center gap-2 ${activeView === 'ingestion' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-black'}`}
             >
               <PlusIcon /> New Ingestion
             </button>
+            
+            <button 
+              onClick={handleStartMerge} 
+              className={`text-left text-white p-2 rounded-md font-semibold flex items-center gap-2 ${activeView === 'merge' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-black'}`}
+            >
+              <Merge className="h-4 w-4" /> Merge Datasets
+            </button>
+            
             <div className="border-t my-2"></div>
+            
             {phaseHistory.map(phase => (
               <button 
                 key={phase.id} 
                 onClick={() => handlePhaseSelect(phase.id)} 
-                className={`text-left p-2 rounded-md font-semibold text-sm truncate flex items-center gap-2 ${activePhaseId === phase.id ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-black'}`}
+                className={`text-left text-white p-2 rounded-md font-semibold text-sm truncate flex items-center gap-2 ${activePhaseId === phase.id ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-black'}`}
               >
                 {phase.type === 'analysis' && <BarChart3 className="h-4 w-4" />}
                 {phase.type === 'preprocessing' && <Settings className="h-4 w-4" />}
                 {phase.type === 'ingestion' && <Database className="h-4 w-4" />}
                 <span className="truncate">{phase.name}</span>
+                {phase.data?.is_merged && (
+                  <span className="text-xs bg-purple-200 text-purple-800 px-1 rounded">M</span>
+                )}
               </button>
             ))}
           </nav>
