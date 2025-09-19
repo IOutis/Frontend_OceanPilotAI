@@ -16,6 +16,7 @@ const MergeComponent = ({ phase, sessionId, phaseHistory, onConfirmMerge, isAgen
 
   // Handle incoming merge suggestions
   useEffect(() => {
+    console.log(phase)
     if (mergeSuggestions) {
       // Apply the AI suggestions
       if (mergeSuggestions.strategy) {
