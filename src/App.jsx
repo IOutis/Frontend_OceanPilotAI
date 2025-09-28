@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { BarChart3, LineChart as LineChartIcon, ChartScatter, TrendingUp, Activity, Database, Upload, Settings, MessageSquare } from 'lucide-react';
 import { Merge } from 'lucide-react';
 import MergeComponent from './components/MergeComponent';
+import DataPlayground from './components/DataPlayground';
 
 // --- Component Imports ---
 // Assumes you have these components in the specified paths
@@ -24,6 +25,7 @@ function App() {
   const [isAgentThinking, setIsAgentThinking] = useState(false);
   const [suggestedMappings, setSuggestedMappings] = useState(null);
   const [analysisResults, setAnalysisResults] = useState(null);
+  const [playgroundOpen, setPlaygroundOpen] = useState(false);
 
   const messagesEndRef = useRef(null);
   const activePhase = phaseHistory.find(p => p.id === activePhaseId);
@@ -60,6 +62,8 @@ function App() {
     };
     return () => socket.close();
   }, []);
+
+  
 
   const handleUploadSuccess = (metadata) => {
     const newPhase = { id: metadata.id, type: 'ingestion', name: `${metadata.filename}`, data: metadata };
@@ -260,7 +264,13 @@ const handleConfirmMerge = (mergedData) => {
                   />
                 );
 
-
+      case 'playground':
+        return (
+          <DataPlayground 
+            sessionId={sessionId}
+            phaseHistory={phaseHistory}
+          />
+        );
 
       case 'analysis':
         if (!activePhase) return <FileUploader onUploadSuccess={handleUploadSuccess} sessionId={sessionId} />;
@@ -276,6 +286,8 @@ const handleConfirmMerge = (mergedData) => {
       default:
         return <FileUploader onUploadSuccess={handleUploadSuccess} sessionId={sessionId} />;
     }
+
+    
   };
 
   return (
@@ -299,6 +311,12 @@ const handleConfirmMerge = (mergedData) => {
               className={`text-left text-white p-2 rounded-md font-semibold flex items-center gap-2 ${activeView === 'merge' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-black'}`}
             >
               <Merge className="h-4 w-4" /> Merge Datasets
+            </button>
+            <button 
+              onClick={() => { setActiveView('playground'); setActivePhaseId(null); }} 
+              className={`text-left text-black p-2 rounded-md font-semibold flex items-center gap-2 ${activeView === 'playground' ? 'bg-purple-100 text-purple-700' : 'hover:bg-gray-100 text-black'}`}
+            >
+              <Database className="h-4 w-4" /> Data Playground
             </button>
             
             <div className="border-t my-2"></div>
@@ -357,7 +375,7 @@ const handleConfirmMerge = (mergedData) => {
             </button>
           </form>
         </div>
-
+          
       </main>
     </div>
   );
