@@ -1,6 +1,10 @@
 @import "tailwindcss";
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Font families */
+  --font-heading: 'Bebas Neue', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+  
+  font-family: var(--font-body);
   line-height: 1.5;
   font-weight: 400;
 
@@ -31,9 +35,36 @@ body {
   min-height: 100vh;
 }
 
+/* Heading styles with Bebas Neue */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+
 h1 {
   font-size: 3.2em;
-  line-height: 1.1;
+}
+
+h2 {
+  font-size: 2.4em;
+}
+
+h3 {
+  font-size: 1.8em;
+}
+
+h4 {
+  font-size: 1.4em;
+}
+
+h5 {
+  font-size: 1.2em;
+}
+
+h6 {
+  font-size: 1em;
 }
 
 button {
@@ -43,12 +74,14 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #6A8BA3;
+  color: white;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  background-color: #5A7A93;
+  border-color: #5A7A93;
 }
 button:focus,
 button:focus-visible {
@@ -64,6 +97,96 @@ button:focus-visible {
     color: #747bff;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: #6A8BA3;
+    color: white;
   }
 }
+
+html, body {
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+::-webkit-scrollbar-corner {
+  background: #f1f5f9;
+}
+
+/* Firefox scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+/* Font utility classes */
+.font-heading {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* Title and brand classes */
+.brand-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* Ultra-large title sizes */
+.text-ultra {
+  font-size: 10rem; /* 160px */
+}
+
+.text-mega {
+  font-size: 12rem; /* 192px */
+}
+
+.text-giga {
+  font-size: 15rem; /* 240px */
+}
+
+/* Responsive ultra-large sizes */
+@media (max-width: 768px) {
+  .text-ultra {
+    font-size: 6rem; /* 96px on mobile */
+  }
+  
+  .text-mega {
+    font-size: 7rem; /* 112px on mobile */
+  }
+  
+  .text-giga {
+    font-size: 8rem; /* 128px on mobile */
+  }
+}
+

@@ -20,7 +20,7 @@ const PlusIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
 );
 const ErrorDisplay = ({ error }) => {
-    return <p className="text-red-600 font-semibold p-4 bg-red-50 rounded-md">Error parsing file: {error}</p>
+    return <p className="text-red-600 font-body font-semibold p-4 bg-red-50 rounded-md">Error parsing file: {error}</p>
 }
 
 // --- New Helper Component: GenericDataTable ---
@@ -31,7 +31,7 @@ const GenericDataTable = ({ data }) => {
   }
   
   if (data[0] && data[0].error) {
-    return <p className="text-red-600 font-semibold">Error parsing file: {data[0].error}</p>;
+    return <p className="text-red-600 font-body font-semibold">Error parsing file: {data[0].error}</p>;
   }
 
   const headers = Object.keys(data[0]);
@@ -42,7 +42,7 @@ const GenericDataTable = ({ data }) => {
         <thead className="bg-gray-200">
           <tr>
             {headers.map(header => (
-              <th key={header} className="p-2 border border-gray-300 font-semibold">
+              <th key={header} className="p-2 border border-gray-300 font-heading font-semibold">
                 {header}
               </th>
             ))}

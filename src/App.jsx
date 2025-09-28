@@ -1,21 +1,30 @@
+// src/App.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, BarChart, Bar, AreaChart, Area } from 'recharts';
-import { BarChart3, LineChart as LineChartIcon, ChartScatter, TrendingUp, Activity, Database, Upload, Settings, MessageSquare } from 'lucide-react';
+import { BarChart3, LineChart as LineChartIcon, ChartScatter, TrendingUp, Activity, Database, Upload, Settings, MessageSquare, ChevronRight, Users, Globe, ArrowRight, Menu, X } from 'lucide-react';
 import { Merge } from 'lucide-react';
 import MergeComponent from './components/MergeComponent';
 import DataPlayground from './components/DataPlayground';
 
 // --- Component Imports ---
-// Assumes you have these components in the specified paths
 import FileUploader from './components/FileUpload';
 import DatasetPreview from './components/DatasetPreview';
 import ColumnMapping from './components/ColumnMapping';
 import Header from './components/Header';
 import { PlusIcon, BotIcon, UserIcon } from './components/HelperIcons';
+import ChatPanel from './components/ChatPanel';
 import Preprocessing from './components/Preprocessing';
 import Analysis from './components/Analysis';
+
+import OceanPilotLanding from './components/OceanPilotLanding'; // <-- new landing component
+import { API_ENDPOINTS } from './config/api';
+
 // --- Main Parent Component: App ---
 function App() {
+  // Landing page state
+  const [showLanding, setShowLanding] = useState(true);
+
+  // Your existing app state
   const [sessionId, setSessionId] = useState(null);
   const [phaseHistory, setPhaseHistory] = useState([]);
   const [activePhaseId, setActivePhaseId] = useState(null);
@@ -30,70 +39,87 @@ function App() {
   const messagesEndRef = useRef(null);
   const activePhase = phaseHistory.find(p => p.id === activePhaseId);
 
+  // Handle Get Started button click
+  const handleGetStarted = () => {
+    setShowLanding(false);
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
   useEffect(() => {
-    const id = crypto.randomUUID();
-    setSessionId(id);
-    const socket = new WebSocket("ws://localhost:8000/ws");
-    socket.onopen = () => socket.send(JSON.stringify({ session_id: id }));
-    socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      console.log("Received message:", message);
-      
-      if (message.type === 'status_update') {
-        setIsAgentThinking(true);
-        setChatMessages(prev => [...prev, { from: 'bot', text: message.payload.message, isStatus: true }]);
-      } else if (message.type === 'agent_response') {
-        setIsAgentThinking(false);
-        setChatMessages(prev => [...prev, message.payload]);
-      } else if (message.type === 'mapping_suggestion') {
-        setIsAgentThinking(false);
-        setSuggestedMappings(message.payload);
-        setChatMessages(prev => [...prev, { from: 'bot', text: 'I have some mapping suggestions for you. Please review them in the main panel.' }]);
-      } else if (message.type === 'analysis_result') {
-        setIsAgentThinking(false);
-        // Handle analysis results from backend
-        setAnalysisResults(message.payload);
-        setChatMessages(prev => [...prev, { from: 'bot', text: `Generated ${message.payload.analysis_type} visualization for your data.` }]);
-      }
-    };
-    return () => socket.close();
-  }, []);
+    // Only open WS after landing is dismissed
+    if (!showLanding) {
+      const id = crypto.randomUUID();
+      setSessionId(id);
+      const socket = new WebSocket(API_ENDPOINTS.WEBSOCKET);
+      socket.onopen = () => {
+        try {
+          socket.send(JSON.stringify({ session_id: id }));
+        } catch (err) {
+          console.error("Socket send error:", err);
+        }
+      };
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        console.log("Received message:", message);
+        
+        if (message.type === 'status_update') {
+          setIsAgentThinking(true);
+          setChatMessages(prev => [...prev, { from: 'bot', text: message.payload.message, isStatus: true }]);
+        } else if (message.type === 'agent_response') {
+          setIsAgentThinking(false);
+          setChatMessages(prev => [...prev, message.payload]);
+        } else if (message.type === 'mapping_suggestion') {
+          setIsAgentThinking(false);
+          setSuggestedMappings(message.payload);
+          setChatMessages(prev => [...prev, { from: 'bot', text: 'I have some mapping suggestions for you. Please review them in the main panel.' }]);
+        } else if (message.type === 'analysis_result') {
+          setIsAgentThinking(false);
+          setAnalysisResults(message.payload);
+          setChatMessages(prev => [...prev, { from: 'bot', text: `Generated ${message.payload.analysis_type} visualization for your data.` }]);
+        }
+      };
+      socket.onerror = (err) => {
+        console.error("WebSocket error:", err);
+      };
+      return () => {
+        try { socket.close(); } catch (e) {}
+      };
+    }
+  }, [showLanding]);
 
-  
-
+  // All your existing handler functions remain unchanged
   const handleUploadSuccess = (metadata) => {
     const newPhase = { id: metadata.id, type: 'ingestion', name: `${metadata.filename}`, data: metadata };
     setPhaseHistory(prev => [...prev, newPhase]);
     setActivePhaseId(newPhase.id);
     setActiveView('preview');
   };
+
   const handleStartMerge = () => {
-  setActiveView('merge');
-  setActivePhaseId(null);
-};
-const handleConfirmMerge = (mergedData) => {
-  // Create new merged phase following the same pattern as file uploads
-  const newMergedPhase = {
-    id: mergedData.id,
-    type: 'ingestion', // Keep as ingestion so it works with existing flow
-    name: mergedData.name,
-    data: mergedData
+    setActiveView('merge');
+    setActivePhaseId(null);
   };
 
-  setPhaseHistory(prev => [...prev, newMergedPhase]);
-  setActivePhaseId(newMergedPhase.id);
-  setActiveView('preview'); // Show preview of merged data
-  
-  // Add success message
-  setChatMessages(prev => [...prev, { 
-    from: 'bot', 
-    text: `Successfully merged datasets into "${mergedData.name}". You can now preview, map, or analyze the merged data.` 
-  }]);
-};
+  const handleConfirmMerge = (mergedData) => {
+    const newMergedPhase = {
+      id: mergedData.id,
+      type: 'ingestion',
+      name: mergedData.name,
+      data: mergedData
+    };
+
+    setPhaseHistory(prev => [...prev, newMergedPhase]);
+    setActivePhaseId(newMergedPhase.id);
+    setActiveView('preview');
+    
+    setChatMessages(prev => [...prev, { 
+      from: 'bot', 
+      text: `Successfully merged datasets into "${mergedData.name}". You can now preview, map, or analyze the merged data.` 
+    }]);
+  };
 
   const handlePhaseSelect = (id) => {
     const selectedPhase = phaseHistory.find(p => p.id === id);
@@ -124,7 +150,7 @@ const handleConfirmMerge = (mergedData) => {
     setChatMessages(prev => [...prev, userMessage]);
     
     try {
-      await fetch('http://localhost:8000/chat', {
+      await fetch(API_ENDPOINTS.CHAT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -158,7 +184,7 @@ const handleConfirmMerge = (mergedData) => {
     if (!activePhaseId || !sessionId) return;
     
     try {
-      const response = await fetch('http://localhost:8000/mappings/confirm', {
+      const response = await fetch(API_ENDPOINTS.CONFIRM_MAPPINGS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -208,7 +234,7 @@ const handleConfirmMerge = (mergedData) => {
     originalPhaseName = sourcePhase.name;
     
     const newAnalysisPhase = {
-      id: Date.now() + 1000, // Ensure unique ID
+      id: Date.now() + 1000,
       type: 'analysis',
       name: `Analysis: ${originalPhaseName}`,
       sourcePhaseId: sourcePhase.id,
@@ -253,16 +279,16 @@ const handleConfirmMerge = (mergedData) => {
           </div>
         );
       
-        case 'merge':
-                return (
-                  <MergeComponent 
-                    phase={activePhase} 
-                    sessionId={sessionId}
-                    phaseHistory={phaseHistory}
-                    onConfirmMerge={handleConfirmMerge}
-                    isAgentThinking={isAgentThinking}
-                  />
-                );
+      case 'merge':
+        return (
+          <MergeComponent 
+            phase={activePhase} 
+            sessionId={sessionId}
+            phaseHistory={phaseHistory}
+            onConfirmMerge={handleConfirmMerge}
+            isAgentThinking={isAgentThinking}
+          />
+        );
 
       case 'playground':
         return (
@@ -277,45 +303,54 @@ const handleConfirmMerge = (mergedData) => {
         if (!activePhase) return <FileUploader onUploadSuccess={handleUploadSuccess} sessionId={sessionId} />;
         const analysisSourcePhase = phaseHistory.find(p => p.id === activePhase.sourcePhaseId);
         return <Analysis 
-                 phase={activePhase} 
-                 sourcePhase={analysisSourcePhase} 
-                 sessionId={sessionId}
-                 onAskAI={handleAskAIForAnalysis}
-                 isAgentThinking={isAgentThinking}
-                 analysisResults={analysisResults}
+                  phase={activePhase} 
+                  sourcePhase={analysisSourcePhase} 
+                  sessionId={sessionId}
+                  onAskAI={handleAskAIForAnalysis}
+                  isAgentThinking={isAgentThinking}
+                  analysisResults={analysisResults}
                />;
       default:
         return <FileUploader onUploadSuccess={handleUploadSuccess} sessionId={sessionId} />;
     }
-
-    
   };
 
+  // Show landing page or main app
+  if (showLanding) {
+    return (
+      // top-level guard against horizontal overflow
+      <div className="min-h-screen w-screen overflow-x-hidden bg-gray-50">
+        <OceanPilotLanding onGetStarted={handleGetStarted} />
+      </div>
+    );
+  }
+
+  // Your existing main app layout
   return (
-    <div className="h-screen w-screen bg-gray-100 flex flex-col font-sans">
+    <div className="h-screen w-screen bg-gray-100 flex flex-col overflow-x-hidden">
       <Header phaseHistory={phaseHistory} onPhaseSelect={handlePhaseSelect} />
       
       <main className="flex-grow p-4 grid grid-cols-12 gap-4 overflow-hidden">
         
-        <div className="col-span-2 bg-white rounded-lg shadow-md p-4 flex flex-col">
-          <h3 className="font-bold text-lg mb-4 border-b pb-2 text-black">Workflow History</h3>
+        <div className="col-span-2 bg-white rounded-lg shadow-md p-4 flex flex-col min-h-0 overflow-y-auto">
+          <h3 className="font-heading font-bold text-lg mb-4 border-b pb-2 text-black">Workflow History</h3>
           <nav className="flex flex-col gap-2">
             <button 
-              onClick={() => { setActiveView('ingestion'); setActivePhaseId(null); }} 
-              className={`text-left text-white p-2 rounded-md font-semibold flex items-center gap-2 ${activeView === 'ingestion' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-black'}`}
+                onClick={() => setActiveView('ingestion')}
+                className={`text-left text-gray-700 p-2 rounded-md font-body font-semibold flex items-center gap-2 ${activeView === 'ingestion' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-gray-900'}`}
             >
               <PlusIcon /> New Ingestion
             </button>
             
             <button 
-              onClick={handleStartMerge} 
-              className={`text-left text-white p-2 rounded-md font-semibold flex items-center gap-2 ${activeView === 'merge' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-black'}`}
+                onClick={() => setActiveView('merge')}
+                className={`text-left text-gray-700 p-2 rounded-md font-body font-semibold flex items-center gap-2 ${activeView === 'merge' ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-gray-900'}`}
             >
               <Merge className="h-4 w-4" /> Merge Datasets
             </button>
             <button 
-              onClick={() => { setActiveView('playground'); setActivePhaseId(null); }} 
-              className={`text-left text-white p-2 rounded-md font-semibold flex items-center gap-2 ${activeView === 'playground' ? 'bg-purple-100 text-purple-700' : 'hover:bg-gray-100 text-black'}`}
+                onClick={() => setActiveView('playground')}
+                className={`text-left text-gray-700 p-2 rounded-md font-body font-semibold flex items-center gap-2 ${activeView === 'playground' ? 'bg-purple-100 text-purple-700' : 'hover:bg-gray-100 hover:text-gray-900'}`}
             >
               <Database className="h-4 w-4" /> Data Playground
             </button>
@@ -323,10 +358,10 @@ const handleConfirmMerge = (mergedData) => {
             <div className="border-t my-2"></div>
             
             {phaseHistory.map(phase => (
-              <button 
-                key={phase.id} 
-                onClick={() => handlePhaseSelect(phase.id)} 
-                className={`text-left text-white p-2 rounded-md font-semibold text-sm truncate flex items-center gap-2 ${activePhaseId === phase.id ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-black'}`}
+              <button
+                    key={phase.id}
+                    onClick={() => handlePhaseClick(phase.id)}
+                    className={`text-left text-gray-700 p-2 rounded-md font-body font-semibold text-sm truncate flex items-center gap-2 ${activePhaseId === phase.id ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 hover:text-gray-900'}`}
               >
                 {phase.type === 'analysis' && <BarChart3 className="h-4 w-4" />}
                 {phase.type === 'preprocessing' && <Settings className="h-4 w-4" />}
@@ -340,41 +375,18 @@ const handleConfirmMerge = (mergedData) => {
           </nav>
         </div>
 
-        <div className="col-span-7 bg-white p-6 rounded-lg shadow-md overflow-y-auto">
+        <div className="col-span-7 bg-white p-6 rounded-lg shadow-md overflow-y-auto min-h-0">
           {renderMainContent()}
         </div>
         
-        <div className="col-span-3 bg-white rounded-lg shadow-md flex flex-col h-full overflow-y-auto">
-          <h2 className="text-xl font-bold p-4 border-b text-black">LLM Assistant</h2>
-          <div className="flex-grow p-4 overflow-y-auto space-y-4">
-            {chatMessages.map((msg, index) => (
-              <div key={index} className={`flex items-start gap-3 ${msg.from === 'user' ? 'justify-end' : ''}`}>
-                {msg.from === 'bot' && <BotIcon />}
-                <div className={`rounded-lg px-4 py-2 max-w-xs ${msg.from === 'bot' ? (msg.isStatus ? 'bg-yellow-100 text-yellow-800 italic' : 'bg-gray-100 text-gray-800') : 'bg-blue-500 text-white'}`}>
-                  {msg.text}
-                </div>
-                {msg.from === 'user' && <UserIcon />}
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-          <form onSubmit={handleChatSubmit} className="p-4 border-t flex gap-2">
-            <input 
-              type="text" 
-              value={chatInput} 
-              onChange={(e) => setChatInput(e.target.value)} 
-              disabled={isAgentThinking} 
-              placeholder={isAgentThinking ? "Agent is processing..." : "Ask about the active data..."} 
-              className="flex-grow border rounded-md p-2 disabled:bg-gray-100 text-black"
-            />
-            <button 
-              type="submit" 
-              disabled={isAgentThinking} 
-              className="bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
-            >
-              Send
-            </button>
-          </form>
+        <div className="col-span-3 flex flex-col min-h-0">
+          <ChatPanel 
+            messages={chatMessages}
+            input={chatInput}
+            onInputChange={(e) => setChatInput(e.target.value)}
+            onSendMessage={handleChatSubmit}
+            isThinking={isAgentThinking}
+          />
         </div>
           
       </main>

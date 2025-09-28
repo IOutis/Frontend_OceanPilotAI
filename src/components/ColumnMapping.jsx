@@ -1,100 +1,128 @@
-import React, { useState, useEffect, useRef } from 'react';
+// src/components/ColumnMapping.jsx
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 
-import FileUploader from './FileUpload'; // You would need to create this file
-import DatasetPreview from './DatasetPreview'; // This is the file you have
+const COLORS = {
+  offWhite: '#EAEEE7',
+  lightBlue: '#D3E1E9',
+  deepGreen: '#3F5734',
+  warmTan: '#C19D77',
+  mutedBlue: '#6A8BA3',
+  blackText: '#05090A'
+};
 
-// --- NEW: Placeholder for the Column Mapping Component ---
 const ColumnMapping = ({ phase, onAskAI, onConfirmMapping, isAgentThinking, suggestedMappings }) => {
-    // Standard roles for marine science data
-    const MAPPING_ROLES = ["Ignore", "Latitude", "Longitude", "Date", "Time", "Depth", "Temperature", "Salinity", "Oxygen", "Phosphate", "Silicate", "Nitrate", "Categorical", "Numerical"];
+  const MAPPING_ROLES = [
+    "Ignore", "Latitude", "Longitude", "Date", "Time",
+    "Depth", "Temperature", "Salinity", "Oxygen", "Phosphate",
+    "Silicate", "Nitrate", "Categorical", "Numerical"
+  ];
 
-    // Safely get the columns from the first row of data
-    const columns = phase?.data?.data?.[0] ? Object.keys(phase.data.data[0]) : [];
+  const columns = phase?.data?.data?.[0] ? Object.keys(phase.data.data[0]) : [];
 
-    // State to hold the mapping choices. Initialize all to "Ignore".
-    const [mappings, setMappings] = useState(() => {
-        const initialMappings = {};
-        columns.forEach(col => {
-            initialMappings[col] = "Ignore";
-        });
-        return initialMappings;
-    });
+  const [mappings, setMappings] = useState(() => {
+    const initial = {};
+    columns.forEach(col => { initial[col] = "Ignore"; });
+    return initial;
+  });
 
-    // --- CHANGE 1: This effect runs when new suggestions arrive from the App component ---
-    useEffect(() => {
-        if (suggestedMappings) {
-            console.log("Received new suggestions:", suggestedMappings);
-            const updatedMappings = {};
-            // Loop through the suggestions from the AI
-            for (const colName in suggestedMappings) {
-                const suggestion = suggestedMappings[colName];
-                // Check if the suggested role is one of the valid options in our dropdown
-                if (MAPPING_ROLES.includes(suggestion.role)) {
-                    updatedMappings[colName] = suggestion.role;
-                }
-            }
-            // Update the local state to change the dropdowns
-            setMappings(prev => ({ ...prev, ...updatedMappings }));
+  useEffect(() => {
+    if (suggestedMappings) {
+      const updated = {};
+      for (const colName in suggestedMappings) {
+        const suggestion = suggestedMappings[colName];
+        if (MAPPING_ROLES.includes(suggestion.role)) {
+          updated[colName] = suggestion.role;
         }
-    }, [suggestedMappings]);
+      }
+      setMappings(prev => ({ ...prev, ...updated }));
+    }
+  }, [suggestedMappings]);
 
-    // Handler for when the user changes a dropdown
-    const handleMappingChange = (column, selectedRole) => {
-        setMappings(prev => ({
-            ...prev,
-            [column]: selectedRole
-        }));
-    };
-    
-    // --- CHANGE 2: Placeholder functions are now connected to props ---
-    const handleAskAI = () => {
-        // This now calls the function passed down from App.jsx
-        onAskAI(); 
-    };
+  const handleMappingChange = (column, role) => {
+    setMappings(prev => ({ ...prev, [column]: role }));
+  };
 
-    const handleConfirmMapping = () => {
-        // This now calls the function from App.jsx, passing the current mappings up
-        onConfirmMapping(mappings);
-    };
+  return (
+    <div
+      className="rounded-2xl shadow-lg p-6 space-y-6"
+      style={{ background: COLORS.offWhite, color: COLORS.blackText }}
+    >
+      {/* Header */}
+      <div className="space-y-1">
+        <h2 className="text-xl font-heading font-semibold">Phase 2: Column Mapping</h2>
+        <p className="text-sm opacity-80">
+          Assign a role to each column from{" "}
+          <strong>{phase?.data?.filename}</strong>.  
+          You can also ask AI for suggestions.
+        </p>
+      </div>
 
-    return (
-        <div className="text-black">
-            <h2 className="text-2xl font-bold mb-2">Phase 2: Column Mapping</h2>
-            <p className="text-gray-600 mb-6">
-                Assign a standard role to each column from <strong className="text-gray-800">{phase.data.filename}</strong>. The AI can help suggest roles.
-            </p>
-            <div className="bg-gray-50 p-6 rounded-lg border space-y-4">
-                {columns.map(col => (
-                    <div key={col} className="grid grid-cols-2 items-center gap-4">
-                        <label htmlFor={`select-${col}`} className="font-semibold text-right truncate pr-4">{col}</label>
-                        <select 
-                            id={`select-${col}`}
-                            value={mappings[col] || "Ignore"} // Fallback to "Ignore"
-                            onChange={(e) => handleMappingChange(col, e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        >
-                            {MAPPING_ROLES.map(role => (
-                                <option key={role} value={role}>{role}</option>
-                            ))}
-                        </select>
-                    </div>
-                ))}
-            </div>
-            <div className="mt-6 pt-4 border-t flex gap-4">
-                {/* --- CHANGE 3: Button now uses isAgentThinking prop --- */}
-                <button 
-                    onClick={handleAskAI} 
-                    disabled={isAgentThinking}
-                    className="w-1/2 bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400"
-                >
-                    {isAgentThinking ? "Thinking..." : "Ask AI for Suggestions"}
-                </button>
-                <button onClick={handleConfirmMapping} className="w-1/2 bg-green-600 text-white font-bold py-2 px-4 rounded-md hover:bg-green-700">
-                    Confirm Mapping
-                </button>
-            </div>
-        </div>
-    );
+      {/* Column mapping table */}
+      <div
+        className="rounded-xl border divide-y"
+        style={{ borderColor: COLORS.lightBlue }}
+      >
+        {columns.map(col => (
+          <div
+            key={col}
+            className="flex items-center justify-between px-4 py-3"
+          >
+            <span className="font-medium truncate pr-4">{col}</span>
+            <select
+              id={`select-${col}`}
+              value={mappings[col] || "Ignore"}
+              onChange={(e) => handleMappingChange(col, e.target.value)}
+              className="rounded-xl px-3 py-2 text-sm focus:outline-none shadow-sm"
+              style={{
+                border: `1px solid ${COLORS.lightBlue}`,
+                background: COLORS.offWhite,
+                color: COLORS.blackText
+              }}
+            >
+              {MAPPING_ROLES.map(role => (
+                <option key={role} value={role}>{role}</option>
+              ))}
+            </select>
+          </div>
+        ))}
+      </div>
+
+      {/* Actions */}
+      <div
+        className="flex gap-4 pt-4 border-t"
+        style={{ borderColor: COLORS.lightBlue }}
+      >
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={onAskAI}
+          disabled={isAgentThinking}
+          className="flex-1 rounded-xl px-4 py-2 font-body font-medium shadow-sm"
+          style={{
+            background: isAgentThinking ? COLORS.lightBlue : COLORS.mutedBlue,
+            color: COLORS.blackText,
+            border: `1px solid ${COLORS.mutedBlue}`,
+            opacity: isAgentThinking ? 0.7 : 1
+          }}
+        >
+          {isAgentThinking ? "Thinking..." : "Ask AI for Suggestions"}
+        </motion.button>
+
+        <motion.button
+          whileTap={{ scale: 0.97 }}
+          onClick={() => onConfirmMapping(mappings)}
+          className="flex-1 rounded-xl px-4 py-2 font-body font-medium shadow-sm"
+          style={{
+            background: COLORS.deepGreen,
+            color: COLORS.blackText,
+            border: `1px solid ${COLORS.deepGreen}`
+          }}
+        >
+          Confirm Mapping
+        </motion.button>
+      </div>
+    </div>
+  );
 };
 
 export default ColumnMapping;
