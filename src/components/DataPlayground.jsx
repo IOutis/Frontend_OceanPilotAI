@@ -211,9 +211,8 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
     return value.toString();
   };
 
-
   return (
-    <div className="fixed inset-0  bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 backdrop-blur-md bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl h-5/6 flex flex-col">
         
         {/* Header */}
@@ -245,7 +244,7 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
               <select 
                 value={selectedPhase || ''} 
                 onChange={(e) => setSelectedPhase(e.target.value)}
-                className="w-full border text-black border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border text-gray-800 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Choose a dataset...</option>
                 {availablePhases.map(phase => (
@@ -264,7 +263,7 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                     <Info className="h-4 w-4" />
                     Dataset Overview
                   </h3>
-                  <div className="text-sm text-black space-y-1">
+                  <div className="text-sm text-gray-800 space-y-1">
                     <div>Rows: {dataInfo.total_rows.toLocaleString()}</div>
                     <div>Columns: {dataInfo.total_columns}</div>
                     <div>Memory: {(dataInfo.memory_usage / 1024 / 1024).toFixed(2)} MB</div>
@@ -284,7 +283,7 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       placeholder="Search across all columns..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
                     />
                   </div>
                 </div>
@@ -298,14 +297,14 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                     <div className="flex gap-2">
                       <button
                         onClick={addFilter}
-                        className="text-xs bg-blue-500 text-black px-2 py-1 rounded hover:bg-blue-600"
+                        className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
                       >
                         <Plus className="h-3 w-3" />
                       </button>
                       {filters.length > 0 && (
                         <button
                           onClick={resetFilters}
-                          className="text-xs bg-gray-500 text-black px-2 py-1 rounded hover:bg-gray-600"
+                          className="text-xs bg-gray-500 text-white px-2 py-1 rounded hover:bg-gray-600"
                         >
                           Clear All
                         </button>
@@ -320,7 +319,7 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                           <select
                             value={filter.column}
                             onChange={(e) => updateFilter(filter.id, 'column', e.target.value)}
-                            className="flex-1 text-xs border rounded px-1 py-1 mr-2"
+                            className="flex-1 text-xs border rounded px-1 py-1 mr-2 text-gray-800"
                           >
                             {dataInfo.column_info.map(col => (
                               <option key={col.name} value={col.name}>{col.name}</option>
@@ -337,7 +336,7 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                         <select
                           value={filter.operator}
                           onChange={(e) => updateFilter(filter.id, 'operator', e.target.value)}
-                          className="w-full text-xs border rounded px-1 py-1 mb-2"
+                          className="w-full text-gray-800 text-xs border rounded px-1 py-1 mb-2"
                         >
                           <option value="eq">Equals</option>
                           <option value="ne">Not Equals</option>
@@ -358,7 +357,7 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                             value={filter.value}
                             onChange={(e) => updateFilter(filter.id, 'value', e.target.value)}
                             placeholder="Filter value..."
-                            className="w-full text-xs border rounded px-1 py-1"
+                            className="w-full text-xs border rounded px-1 py-1 text-gray-800"
                           />
                         )}
                       </div>
@@ -381,13 +380,13 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                       <div className="flex gap-2 mb-2">
                         <button
                           onClick={() => setSelectedColumns(dataInfo.column_info.map(col => col.name))}
-                          className="text-xs bg-green-500 text-black px-2 py-1 rounded hover:bg-green-600"
+                          className="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
                         >
                           All
                         </button>
                         <button
                           onClick={() => setSelectedColumns([])}
-                          className="text-xs bg-red-500 text-black px-2 py-1 rounded hover:bg-red-600"
+                          className="text-xs bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                         >
                           None
                         </button>
@@ -408,13 +407,13 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                             className="mt-0.5"
                           />
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium truncate">{col.name}</div>
-                            <div className="text-gray-500">{col.data_type}</div>
-                            <div className="text-gray-500">
+                            <div className="font-medium truncate text-gray-800">{col.name}</div>
+                            <div className="text-gray-600">{col.data_type}</div>
+                            <div className="text-gray-600">
                               Unique: {col.unique_values} | Nulls: {col.null_percentage.toFixed(1)}%
                             </div>
                             {col.is_numeric && col.mean_value && (
-                              <div className="text-gray-500">
+                              <div className="text-gray-600">
                                 Mean: {col.mean_value.toFixed(2)}
                               </div>
                             )}
@@ -438,13 +437,13 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                   <span className="text-sm text-gray-600">View:</span>
                   <button
                     onClick={() => setViewMode('table')}
-                    className={`p-2 rounded ${viewMode === 'table' ? 'bg-blue-500 text-black' : 'bg-gray-200 text-gray-700'}`}
+                    className={`p-2 rounded ${viewMode === 'table' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
                   >
                     <Grid className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => setViewMode('summary')}
-                    className={`p-2 rounded ${viewMode === 'summary' ? 'bg-blue-500 text-black' : 'bg-gray-200 text-gray-700'}`}
+                    className={`p-2 rounded ${viewMode === 'summary' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
                   >
                     <BarChart3 className="h-4 w-4" />
                   </button>
@@ -458,7 +457,7 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                       setPageSize(parseInt(e.target.value));
                       setCurrentPage(1);
                     }}
-                    className="border rounded px-2 py-1 text-sm"
+                    className="border rounded px-2 py-1 text-sm text-gray-800"
                   >
                     <option value={25}>25</option>
                     <option value={50}>50</option>
@@ -472,25 +471,25 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                 <button
                   onClick={fetchFilteredData}
                   disabled={loading}
-                  className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-black rounded hover:bg-blue-600 disabled:bg-gray-400 text-sm"
+                  className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 text-sm"
                 >
                   <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                   Refresh
                 </button>
                 
                 <div className="relative group">
-                  <button className="flex items-center gap-2 px-3 py-2 bg-green-500 text-black rounded hover:bg-green-600 text-sm">
+                  <button className="flex items-center gap-2 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm">
                     <Download className="h-4 w-4" />
                     Export
                   </button>
                   <div className="absolute right-0 top-full mt-1 bg-white border rounded shadow-lg hidden group-hover:block z-10">
-                    <button onClick={() => exportData('csv')} className="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left">
+                    <button onClick={() => exportData('csv')} className="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left text-gray-800">
                       CSV
                     </button>
-                    <button onClick={() => exportData('json')} className="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left">
+                    <button onClick={() => exportData('json')} className="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left text-gray-800">
                       JSON
                     </button>
-                    <button onClick={() => exportData('excel')} className="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left">
+                    <button onClick={() => exportData('excel')} className="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left text-gray-800">
                       Excel
                     </button>
                   </div>
@@ -527,7 +526,7 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                         {selectedColumns.map(column => (
                           <th 
                             key={column}
-                            className="border border-gray-300 px-3 py-2 text-left cursor-pointer hover:bg-gray-100"
+                            className="border border-gray-300 px-3 py-2 text-left cursor-pointer hover:bg-gray-100 text-gray-800"
                             onClick={() => handleSort(column)}
                           >
                             <div className="flex items-center gap-2">
@@ -544,7 +543,7 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                       {data.map((row, index) => (
                         <tr key={index} className="hover:bg-gray-50">
                           {selectedColumns.map(column => (
-                            <td key={column} className="border border-gray-300 px-3 py-2">
+                            <td key={column} className="border border-gray-300 px-3 py-2 text-gray-800">
                               {formatValue(row[column])}
                             </td>
                           ))}
@@ -575,7 +574,7 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                           <div className="text-xs text-gray-500 mb-1">Sample Values:</div>
                           <div className="text-xs bg-gray-100 p-2 rounded max-h-20 overflow-y-auto">
                             {col.sample_values.slice(0, 5).map((val, i) => (
-                              <div key={i}>{formatValue(val)}</div>
+                              <div key={i} className="text-gray-800">{formatValue(val)}</div>
                             ))}
                           </div>
                         </div>
@@ -596,17 +595,17 @@ const DataPlayground = ({ sessionId, phaseHistory, onClose }) => {
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed text-gray-800 bg-white hover:bg-gray-50"
                   >
                     Previous
                   </button>
-                  <span className="px-3 py-1 text-sm">
+                  <span className="px-3 py-1 text-sm text-gray-800">
                     Page {currentPage} of {totalPages}
                   </span>
                   <button
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed text-gray-800 bg-white hover:bg-gray-50"
                   >
                     Next
                   </button>

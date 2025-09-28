@@ -269,6 +269,7 @@ const handleConfirmMerge = (mergedData) => {
           <DataPlayground 
             sessionId={sessionId}
             phaseHistory={phaseHistory}
+            onClose={() => setActiveView('ingestion')}
           />
         );
 
@@ -314,7 +315,7 @@ const handleConfirmMerge = (mergedData) => {
             </button>
             <button 
               onClick={() => { setActiveView('playground'); setActivePhaseId(null); }} 
-              className={`text-left text-black p-2 rounded-md font-semibold flex items-center gap-2 ${activeView === 'playground' ? 'bg-purple-100 text-purple-700' : 'hover:bg-gray-100 text-black'}`}
+              className={`text-left text-white p-2 rounded-md font-semibold flex items-center gap-2 ${activeView === 'playground' ? 'bg-purple-100 text-purple-700' : 'hover:bg-gray-100 text-black'}`}
             >
               <Database className="h-4 w-4" /> Data Playground
             </button>
