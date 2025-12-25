@@ -29,6 +29,8 @@ export const API_ENDPOINTS = {
   
   // Merge
   MERGE_AVAILABLE: (sessionId) => `${API_BASE_URL}/merge/available/${sessionId}`,
+   // Soil area endpoint (backend stub expects POST { polygon, samples })
+   SOIL_AREA: `${API_BASE_URL}/soil/area`,
 };
 
 // Helper function to get WSL IP instructions

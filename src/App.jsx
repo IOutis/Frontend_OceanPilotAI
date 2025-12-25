@@ -18,6 +18,7 @@ import Analysis from './components/Analysis';
 
 import OceanPilotLanding from './components/OceanPilotLanding'; // <-- new landing component
 import { API_ENDPOINTS } from './config/api';
+import SoilMap from './components/SoilMap';
 
 // --- Main Parent Component: App ---
 function App() {
@@ -315,6 +316,39 @@ function App() {
     }
   };
 
+  // Soil map view
+  if (activeView === 'soil') {
+    return (
+      <div className="h-screen w-screen bg-gray-100 flex flex-col overflow-x-hidden">
+        <Header phaseHistory={phaseHistory} onPhaseSelect={handlePhaseSelect} />
+        <main className="flex-grow p-4 grid grid-cols-12 gap-4 overflow-hidden">
+          <div className="col-span-2 bg-white rounded-lg shadow-md p-4 flex flex-col min-h-0 overflow-y-auto">
+            <h3 className="font-heading font-bold text-lg mb-4 border-b pb-2 text-black">Workflow History</h3>
+            <nav className="flex flex-col gap-2">
+              <button onClick={() => setActiveView('ingestion')} className="text-left text-gray-700 p-2 rounded-md font-body font-semibold">New Ingestion</button>
+              <button onClick={() => setActiveView('merge')} className="text-left text-gray-700 p-2 rounded-md font-body font-semibold">Merge Datasets</button>
+              <button onClick={() => setActiveView('playground')} className="text-left text-gray-700 p-2 rounded-md font-body font-semibold">Data Playground</button>
+            </nav>
+          </div>
+
+          <div className="col-span-7 bg-white p-6 rounded-lg shadow-md overflow-y-auto min-h-0">
+            <SoilMap />
+          </div>
+
+          <div className="col-span-3 flex flex-col min-h-0">
+            <ChatPanel 
+              messages={chatMessages}
+              input={chatInput}
+              onInputChange={(e) => setChatInput(e.target.value)}
+              onSendMessage={handleChatSubmit}
+              isThinking={isAgentThinking}
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // Show landing page or main app
   if (showLanding) {
     return (
@@ -353,6 +387,12 @@ function App() {
                 className={`text-left text-gray-700 p-2 rounded-md font-body font-semibold flex items-center gap-2 ${activeView === 'playground' ? 'bg-purple-100 text-purple-700' : 'hover:bg-gray-100 hover:text-gray-900'}`}
             >
               <Database className="h-4 w-4" /> Data Playground
+            </button>
+            <button 
+                onClick={() => setActiveView('soil')}
+                className={`text-left text-gray-700 p-2 rounded-md font-body font-semibold flex items-center gap-2 ${activeView === 'soil' ? 'bg-green-100 text-green-700' : 'hover:bg-gray-100 hover:text-gray-900'}`}
+            >
+              <Globe className="h-4 w-4" /> Soil Map
             </button>
             
             <div className="border-t my-2"></div>
